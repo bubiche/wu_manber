@@ -18,4 +18,6 @@ wuManber.scan(text,
 );
 ```
 
-~~Currently only works with patterns of length >= 3. For patterns of length 1 and 2, we could use 2 arrays `lengthOneLookup[ALPHABET_SIZE]` and `lengthTwoLookup[ALPHABET_SIZE][ALPHABET_SIZE]` to scan for them as described in this paper: https://www.researchgate.net/publication/275266493_Improve_Wu-Manber_Algorithm_for_Multiple_Pattern_Matching_Time_Efficiency_Optimization ~~ => This is implemented
+~~Currently only works with patterns of length >= 3. For patterns of length 1 and 2, we could use 2 arrays `lengthOneLookup[ALPHABET_SIZE]` and `lengthTwoLookup[ALPHABET_SIZE][ALPHABET_SIZE]` to scan for them.~~
+
+=> This is implemented (Based on https://www.researchgate.net/publication/275266493_Improve_Wu-Manber_Algorithm_for_Multiple_Pattern_Matching_Time_Efficiency_Optimization)
