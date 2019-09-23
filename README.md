@@ -12,9 +12,9 @@ std::vector<std::string> patternList = { "some", "word", "abracadabra" };
 std::string text = "someabracadabra";
 wuManber.preProcess(patternList);
 wuManber.scan(text,
-[](const std::string &pattern, size_t indexInPatternList, size_t startIndexInText) {
-  std::cout << "Matched pattern #" << indexInPatternList <<": '" << pattern << "' at position " << startIndexInText << std::endl;
-}
+  [](const std::string &pattern, size_t indexInPatternList, size_t startIndexInText) {
+    std::cout << "Matched pattern #" << indexInPatternList <<": '" << pattern << "' at position " << startIndexInText << std::endl;
+  }
 );
 ```
 
