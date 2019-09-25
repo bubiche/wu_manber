@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <functional>
 #include <cmath>
+#include <cstddef>
 
 namespace wu_manber {
 
@@ -24,11 +25,11 @@ namespace wu_manber {
   public:
     using StringType = std::basic_string<CharType, CharTraits>;
 
-    WuManber(unsigned short HBITS = 4, size_t tableSize = 32768) :
+    WuManber(unsigned short int HBITS = 4, std::size_t tableSize = 32768) :
       isInitialized_(false), m_(0), k_(0),
       HBITS_(HBITS), tableSize_(tableSize)
     {
-      shiftTable_ = new size_t[tableSize_];
+      shiftTable_ = new std::size_t[tableSize_];
       hashPrefixTable_ = new std::vector<PatternHash>[tableSize_];
 
       alphabetSize_ = pow(2, 8 * sizeof(CharType));
@@ -58,7 +59,7 @@ namespace wu_manber {
     void preProcess(const std::vector<StringType> &patterns) {
       m_ = 0;
       for (const auto &pattern : patterns) {
-        size_t patternLength = pattern.size();
+        std::size_t patternLength = pattern.size();
         if (patternLength < B_) {
           if (patternLength == 1) {
             lengthOnePatterns_.push_back(pattern);
@@ -73,13 +74,13 @@ namespace wu_manber {
       k_ = patternList_.size();
 
       // fill default value for SHIFT table
-      for (int i = 0; i < tableSize_; ++i) {
+      for (std::size_t i = 0; i < tableSize_; ++i) {
         shiftTable_[i] = m_ - B_ + 1;
       }
 
       // fill HASH/PREFIX and SHIFT tables
-      for (size_t i = 0; i < k_; ++i) {
-        for (size_t j = m_; j >= B_; --j) {
+      for (std::size_t i = 0; i < k_; ++i) {
+        for (std::size_t j = m_; j >= B_; --j) {
           unsigned int hashValue;
           hashValue = patternList_[i][j - 1];
           hashValue <<= HBITS_;
@@ -88,7 +89,7 @@ namespace wu_manber {
           hashValue += patternList_[i][j - 2 - 1];
           hashValue = fastmod(hashValue, tableSize_);
 
-          size_t shiftLength = m_ - j;
+          std::size_t shiftLength = m_ - j;
           shiftTable_[hashValue] = std::min(shiftTable_[hashValue], shiftLength);
           if (!shiftLength) {
             PatternHash patternHashToAdd;
@@ -107,20 +108,20 @@ namespace wu_manber {
       if (isShortPatternExist_) {
         lengthOnePatternLookup_ = new int[alphabetSize_];
         lengthTwoPatternLookup_ = new int*[alphabetSize_];
-        for (int i = 0; i < alphabetSize_; ++i) {
+        for (std::size_t i = 0; i < alphabetSize_; ++i) {
           lengthOnePatternLookup_[i] = -1;
           lengthTwoPatternLookup_[i] = new int[alphabetSize_];
-          for (int j = 0; j < alphabetSize_; ++j) {
+          for (std::size_t j = 0; j < alphabetSize_; ++j) {
             lengthTwoPatternLookup_[i][j] = -1;
           }
         }
 
-        for (int i = 0; i < lengthOnePatterns_.size(); ++i) {
-          lengthOnePatternLookup_[(size_t)lengthOnePatterns_[i][0]] = i;
+        for (std::size_t i = 0; i < lengthOnePatterns_.size(); ++i) {
+          lengthOnePatternLookup_[(std::size_t)lengthOnePatterns_[i][0]] = i;
         }
 
-        for (int i = 0; i < lengthTwoPatterns_.size(); ++i) {
-          lengthTwoPatternLookup_[(size_t)lengthTwoPatterns_[i][0]][(size_t)lengthTwoPatterns_[i][1]] = i;
+        for (std::size_t i = 0; i < lengthTwoPatterns_.size(); ++i) {
+          lengthTwoPatternLookup_[(std::size_t)lengthTwoPatterns_[i][0]][(std::size_t)lengthTwoPatterns_[i][1]] = i;
         }
       }
 
@@ -128,26 +129,26 @@ namespace wu_manber {
     }
 
     // onMatch takes 3 arguments: the matched pattern, the pattern's index in the pattern list, the start index of the match in text
-    void scan(const StringType &text, std::function<void(const StringType&, size_t, size_t)> onMatch) {
-      size_t textLength = text.size();
+    void scan(const StringType &text, std::function<void(const StringType&, std::size_t, std::size_t)> onMatch) {
+      std::size_t textLength = text.size();
       if (!isInitialized_ || textLength == 0) {
         return;
       }
 
       if (isShortPatternExist_) {
-        int firstCharacterMatchIndex = lengthOnePatternLookup_[(size_t)text[0]];
+        int firstCharacterMatchIndex = lengthOnePatternLookup_[(std::size_t)text[0]];
         if (firstCharacterMatchIndex > -1) {
           onMatch(lengthOnePatterns_[firstCharacterMatchIndex], firstCharacterMatchIndex, 0);
         }
         const int PRE_WU_MANBER_LIMIT = std::min(m_ - 1, textLength);
-        for (int idx = 1; idx < PRE_WU_MANBER_LIMIT; ++idx) {
+        for (std::size_t idx = 1; idx < PRE_WU_MANBER_LIMIT; ++idx) {
           CharType preChar = text[idx - 1];
           CharType curChar = text[idx];
           checkShortPattern_(text, idx, onMatch);
         }
       }
 
-      size_t idx = m_ - 1;
+      std::size_t idx = m_ - 1;
       while (idx < textLength) {
         if (isShortPatternExist_) {
           checkShortPattern_(text, idx, onMatch);
@@ -162,7 +163,7 @@ namespace wu_manber {
         hashValue += text[idx - 2];
         hashValue = fastmod(hashValue, tableSize_);
 
-        size_t shiftLength = shiftTable_[hashValue];
+        std::size_t shiftLength = shiftTable_[hashValue];
         if (shiftLength == 0) {
           // found a potential match, check values in HASH/PREDIX and will shift by 1 character
           shiftLength = 1;
@@ -176,9 +177,9 @@ namespace wu_manber {
             if (prefixHash == potentialMatch.prefixHash) {
               bool isMatched = false;
               const StringType &pattern = patternList_[potentialMatch.idx];
-              size_t idxInPattern = 0;
-              size_t idxInText = idx - m_ + 1;
-              size_t patternLength = pattern.size();
+              std::size_t idxInPattern = 0;
+              std::size_t idxInText = idx - m_ + 1;
+              std::size_t patternLength = pattern.size();
 
               // prefix hash matched so we try to match character by character
               while(idxInPattern < patternLength && idxInText < textLength && pattern[idxInPattern++] == text[idxInText++]);
@@ -203,29 +204,29 @@ namespace wu_manber {
     // block size
     // the paper says in practice, we use either B = 2 or B = 3
     // we'll use 3
-    const size_t B_ = 3;
+    const std::size_t B_ = 3;
 
     // min pattern size
-    size_t m_;
+    std::size_t m_;
 
     // number of patterns to be processed by Wu - Manber
-    size_t k_;
+    std::size_t k_;
 
     // number of bits to shift when hashing
     // the paper says it use 5
-    unsigned short HBITS_;
+    unsigned short int HBITS_;
 
     // size of HASH and SHIFT tables
-    size_t tableSize_;
+    std::size_t tableSize_;
 
     // SHIFT table
-    size_t* shiftTable_;
+    std::size_t* shiftTable_;
 
     // store index in pattern list + prefix hash value for each pattern
     struct PatternHash
     {
         unsigned int prefixHash;
-        size_t idx;
+        std::size_t idx;
     };
 
     // HASH + PREFIX table
@@ -236,7 +237,7 @@ namespace wu_manber {
 
     // handle length 1 and 2 patterns
     bool isShortPatternExist_;
-    size_t alphabetSize_;
+    std::size_t alphabetSize_;
     int* lengthOnePatternLookup_;
     int** lengthTwoPatternLookup_;
     std::vector<StringType> lengthOnePatterns_;
@@ -244,13 +245,13 @@ namespace wu_manber {
 
     bool isInitialized_;
 
-    void checkShortPattern_(const StringType &text, size_t cur_idx, std::function<void(const StringType&, size_t, size_t)> onMatch) const {
-      int l1MatchIndex = lengthOnePatternLookup_[(size_t)text[cur_idx]];
+    void checkShortPattern_(const StringType &text, std::size_t cur_idx, std::function<void(const StringType&, std::size_t, std::size_t)> onMatch) const {
+      int l1MatchIndex = lengthOnePatternLookup_[(std::size_t)text[cur_idx]];
       if (l1MatchIndex > -1) {
         onMatch(lengthOnePatterns_[l1MatchIndex], l1MatchIndex, cur_idx);
       }
 
-      int l2MatchIndex = lengthTwoPatternLookup_[(size_t)text[cur_idx - 1]][(size_t)text[cur_idx]];
+      int l2MatchIndex = lengthTwoPatternLookup_[(std::size_t)text[cur_idx - 1]][(std::size_t)text[cur_idx]];
       if (l2MatchIndex > -1) {
         onMatch(lengthTwoPatterns_[l2MatchIndex], l2MatchIndex, cur_idx - 1);
       }
