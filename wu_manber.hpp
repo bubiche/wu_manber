@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <functional>
-#include <math.h>
+#include <cmath>
 
 namespace wu_manber {
 
@@ -19,10 +19,10 @@ namespace wu_manber {
     }
   }
 
-  template<typename CharType>
+  template<typename CharType, typename CharTraits = std::char_traits<CharType>>
   class WuManber {
   public:
-    using StringType = std::basic_string<CharType>;
+    using StringType = std::basic_string<CharType, CharTraits>;
 
     WuManber(unsigned short HBITS = 4, size_t tableSize = 32768) :
       isInitialized_(false), m_(0), k_(0),
