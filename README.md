@@ -1,5 +1,5 @@
 # Wu - Manber Implementation (C++)
-This is a header only implementation of the Wu-Manber algorithm for multiple pattern matching: http://webglimpse.net/pubs/TR94-17.pdf, I cannot find any C++ implementation on github so I decided to make one.
+This is a header only implementation of the Wu-Manber algorithm for multiple pattern matching: https://www.cs.arizona.edu/sites/default/files/TR94-17.pdf, I cannot find any C++ implementation on github so I decided to make one.
 
 This algorithm is one of the ones that power agrep, the use of hash table is quite interesting since most popular algorithms use some sort of finite automata structure.
 
